@@ -1,6 +1,6 @@
 ---
 - name: Create double-take user
-  user:
+  ansible.builtin.user:
     name: "{{ double_take_user }}"
     system: true
     shell: /bin/false
@@ -9,27 +9,27 @@
   become: true
 
 - name: Get double-take user info
-  user:
+  ansible.builtin.user:
     name: "{{ double_take_user }}"
   register: double_take_user_info
   become: true
 
 - name: Create double-take directories
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     owner: "{{ double_take_user }}"
     group: "{{ double_take_user }}"
     mode: "{{ item.mode }}"
   loop:
-    - { path: "{{ double_take_config_dir }}", mode: "0755" }
-    - { path: "{{ double_take_data_dir }}", mode: "0755" }
-    - { path: "{{ double_take_config_dir }}/docker-compose", mode: "0755" }
-    - { path: "{{ double_take_config_dir }}/nginx", mode: "0755" }
+    - {path: "{{ double_take_config_dir }}", mode: "0755"}
+    - {path: "{{ double_take_data_dir }}", mode: "0755"}
+    - {path: "{{ double_take_config_dir }}/docker-compose", mode: "0755"}
+    - {path: "{{ double_take_config_dir }}/nginx", mode: "0755"}
   become: true
 
 - name: Create nginx configuration file
-  template:
+  ansible.builtin.template:
     src: double-take/nginx.conf.j2
     dest: "{{ double_take_config_dir }}/nginx/nginx.conf"
     owner: "{{ double_take_user }}"
@@ -40,7 +40,7 @@
     - Restart double-take
 
 - name: Create Double Take Docker Compose file
-  template:
+  ansible.builtin.template:
     src: double-take/docker-compose.yml.j2
     dest: "{{ double_take_config_dir }}/docker-compose/docker-compose.yml"
     owner: "{{ double_take_user }}"
@@ -51,7 +51,7 @@
     - Restart double-take
 
 - name: Create Double Take systemd service
-  template:
+  ansible.builtin.template:
     src: double-take/double-take.service.j2
     dest: /etc/systemd/system/{{ double_take_service_name }}.service
     mode: "0644"
@@ -60,7 +60,7 @@
     - Restart double-take
 
 - name: Enable Double Take service without starting
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ double_take_service_name }}"
     enabled: true
     daemon_reload: true

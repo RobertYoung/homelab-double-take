@@ -21,13 +21,8 @@
     enabled: true
     state: started
 
-# - name: "Restart telegraf"
-#   become: true
-#   ignore_errors: True
-#   shell: "systemctl stop telegraf; systemctl daemon-reload; systemctl enable --now telegraf"
-
 - name: "Restart {{ compreface_service_name }}"
-  systemd:
+  ansible.builtin.systemd:
     name: "{{ compreface_service_name }}"
     state: restarted
     daemon_reload: true
