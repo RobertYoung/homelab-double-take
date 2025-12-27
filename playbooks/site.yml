@@ -1,6 +1,6 @@
 ---
 - name: Double Take server configuration
-  hosts: double_take
+  hosts: double-take
   vars:
     hostname: double-take
     domain: local.iamrobertyoung.co.uk
@@ -34,18 +34,15 @@
         telegraf_influxdb_url: "https://influxdb.{{ domain }}"
         telegraf_influxdb_port: 8086
         telegraf_influxdb_organisation: "0dd8df669872ba9e"
-        telegraf_influxdb_token: "{{ lookup('aws_ssm', '/home-server/influxdb-token', region='eu-west-2') }}"
+        telegraf_influxdb_token: "{{ lookup('amazon.aws.aws_ssm', '/home-server/influxdb-token') }}"
         telegraf_influxdb_bucket: "home-server"
 
     - role: step-ca-client
       tags: [step-ca-client]
       vars:
-        step_ca_client_provisioner_password: "{{ lookup('aws_ssm', '/home-server/step-ca-ansible-password', region='eu-west-2') }}"
-        step_ca_client_post_renew_commands:
-          - "cp /etc/ssl/certs/double-take.local.iamrobertyoung.co.uk.crt /etc/double-take/certs/"
-          - "cp /etc/ssl/private/double-take.local.iamrobertyoung.co.uk.pem /etc/double-take/certs/"
-          - "docker kill -s HUP nginx"
-        step_ca_client_cert_not_after: "168h"  # 7 days
+        step_ca_client_provisioner_password: "{{ lookup('amazon.aws.aws_ssm', '/home-server/step-ca-ansible-password') }}"
+        step_ca_client_post_renew_commands: []
+        step_ca_client_cert_not_after: "168h" # 7 days
 
     - role: syslog
       tags: [syslog]
@@ -54,6 +51,14 @@
 
     - role: wazuh-agent
       tags: [wazuh-agent]
+
+    - role: certbot
+      tags: [certbot]
+      vars:
+        certbot_domain: "{{ fqdn }}"
+        certbot_aws_access_key: "{{ lookup('amazon.aws.aws_ssm', '/home-server/certbot-access-key') }}"
+        certbot_aws_secret_access_key: "{{ lookup('amazon.aws.aws_ssm', '/home-server/certbot-secret-access-key') }}"
+        certbot_deploy_hook_script: "../roles/double-take/files/certbot/deploy-hook.sh"
 
     - role: double-take
       tags: [double-take]

@@ -1,0 +1,79 @@
+---
+- name: Create backup directory
+  become: true
+  ansible.builtin.file:
+    path: /mnt/backup
+    state: directory
+    mode: "0755"
+
+- name: Copy dockerfile
+  ansible.builtin.copy:
+    src: files/dockerfile
+    dest: /tmp/Dockerfile
+    mode: "0644"
+  register: dockerfile_copy
+
+- name: Create backup script
+  become: true
+  ansible.builtin.copy:
+    src: "files/backup.sh"
+    dest: "/tmp/backup.sh"
+    mode: "0644"
+  register: backup_script_copy
+
+- name: Build Docker image
+  become: true
+  community.docker.docker_image:
+    name: "{{ backup_image_name }}"
+    tag: "{{ backup_image_tag }}"
+    source: build
+    push: false
+    build:
+      path: /tmp
+    force_source: "{{ dockerfile_copy.changed or backup_script_copy.changed }}"
+    state: present
+  notify: "Restart {{ double_take_service_name }}"
+
+- name: Create backup .env file
+  become: true
+  ansible.builtin.template:
+    src: templates/double-take/backup-toolkit.env.j2
+    dest: "{{ double_take_config_dir }}/docker-compose/backup-toolkit.env"
+    group: "{{ double_take_user }}"
+    owner: "{{ double_take_user }}"
+    mode: "0400"
+  notify: "Restart {{ double_take_service_name }}"
+
+- name: Create double-take backup systemd service file
+  become: true
+  ansible.builtin.template:
+    src: "templates/backup/backup.service.j2"
+    dest: /etc/systemd/system/{{ double_take_service_name }}-backup.service
+    owner: root
+  vars:
+    service: "{{ double_take_service_name }}"
+  register: service_backup
+
+- name: Create double-take backup systemd timer file
+  become: true
+  ansible.builtin.template:
+    src: "templates/backup/backup.timer.j2"
+    dest: /etc/systemd/system/{{ double_take_service_name }}-backup.timer
+    owner: root
+  vars:
+    service: "{{ double_take_service_name }}"
+    cron: "*-*-* 04:00:00"
+  register: service_backup
+
+- name: "Reload systemd"
+  become: true
+  changed_when: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+  when: service_backup.changed or service_backup.changed
+  register: systemd_reload
+
+- name: Start {{ double_take_service_name }}-backup timer
+  become: true
+  command: "systemctl enable --now {{ double_take_service_name }}-backup.timer"
+  when: systemd_reload.changed

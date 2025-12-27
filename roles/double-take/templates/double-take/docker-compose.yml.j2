@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  double-take:
+    image: skrashevich/double-take:{{ double_take_version }}
+    container_name: {{ double_take_service_name }}
+    restart: unless-stopped
+    volumes:
+      - double-take-data:/.storage
+    environment:
+      - TZ=Europe/London
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - double-take
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.27-bookworm
+    restart: always
+    ports:
+      - '443:443'
+    volumes:
+      - {{ double_take_config_dir }}/nginx:/etc/nginx
+      - nginx-data:/data
+      - /etc/letsencrypt:/etc/letsencrypt
+    depends_on:
+      - double-take
+    networks:
+      - double-take
+
+  backup-toolkit:
+    container_name: backup-toolkit
+    image: backup-toolkit:local
+    command: sleep infinity 
+    restart: unless-stopped
+    volumes:
+      - double-take-data:{{ backup_from }}
+    env_file:
+      - ./backup-toolkit.env
+    networks:
+      - double-take
+
+volumes:
+  double-take-data:
+  nginx-data:
+
+networks:
+  double-take:

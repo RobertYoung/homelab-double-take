@@ -1,0 +1,55 @@
+---
+- name: Create compreface user
+  user:
+    name: "{{ compreface_user }}"
+    system: true
+    shell: /bin/false
+    home: "{{ compreface_data_dir }}"
+    createhome: false
+  become: true
+
+- name: Get compreface user info
+  user:
+    name: "{{ compreface_user }}"
+  register: compreface_user_info
+  become: true
+
+- name: Create compreface directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ compreface_user }}"
+    group: "{{ compreface_user }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "{{ compreface_config_dir }}", mode: "0755" }
+    - { path: "{{ compreface_data_dir }}", mode: "0755" }
+    - { path: "{{ compreface_config_dir }}/docker-compose", mode: "0755" }
+  become: true
+
+- name: Create CompreFace Docker Compose file
+  template:
+    src: compreface/docker-compose.yml.j2
+    dest: "{{ compreface_config_dir }}/docker-compose/docker-compose.yml"
+    owner: "{{ compreface_user }}"
+    group: "{{ compreface_user }}"
+    mode: "0644"
+  become: true
+  notify:
+    - Restart compreface
+
+- name: Create CompreFace systemd service
+  template:
+    src: compreface/compreface.service.j2
+    dest: /etc/systemd/system/{{ compreface_service_name }}.service
+    mode: "0644"
+  become: true
+  notify:
+    - Restart compreface
+
+- name: Enable CompreFace service without starting
+  systemd:
+    name: "{{ compreface_service_name }}"
+    enabled: true
+    daemon_reload: true
+  become: true

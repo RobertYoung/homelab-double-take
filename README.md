@@ -10,7 +10,7 @@ Ansible project for deploying [Double Take](https://github.com/jakowenko/double-
 .
 ├── ansible.cfg                 # Ansible configuration
 ├── inventories/
-│   ├── hosts.yml               # Inventory with double_take group
+│   ├── hosts.yml               # Inventory with double-take group
 │   └── group_vars/             # Group variables
 ├── host_vars/                  # Host-specific variables
 ├── roles/
@@ -45,7 +45,7 @@ All commands require AWS credentials via aws-vault for SSM parameter lookups.
 ### Test connectivity
 
 ```bash
-aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible double_take -m ping
+aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible double-take -m ping
 ```
 
 ### Run full playbook

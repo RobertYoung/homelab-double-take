@@ -1,39 +1,36 @@
 ---
-# TODO: Implement double-take role tasks
-# Follow the pattern from uptime-kuma role:
-#
-# - name: Setup system
-#   ansible.builtin.include_tasks:
-#     file: setup.yml
-#     apply:
-#       tags:
-#         - setup
-#   tags:
-#     - always
-#
-# - name: Setup nginx
-#   ansible.builtin.include_tasks:
-#     file: nginx.yml
-#     apply:
-#       tags:
-#         - nginx
-#   tags:
-#     - always
-#
-# - name: Setup double-take
-#   ansible.builtin.include_tasks:
-#     file: double-take.yml
-#     apply:
-#       tags:
-#         - double-take
-#   tags:
-#     - always
-#
-# - name: Setup backup
-#   ansible.builtin.include_tasks:
-#     file: backup.yml
-#     apply:
-#       tags:
-#         - backup
-#   tags:
-#     - always
+- name: Include system setup tasks
+  ansible.builtin.include_tasks:
+    file: setup.yml
+    apply:
+      tags:
+        - setup
+  tags:
+    - always
+
+- name: Setup backup
+  ansible.builtin.include_tasks:
+    file: backup.yml
+    apply:
+      tags:
+        - backup
+  tags:
+    - always
+
+- name: Include compreface deployment tasks
+  ansible.builtin.include_tasks:
+    file: compreface.yml
+    apply:
+      tags:
+        - compreface
+  tags:
+    - always
+
+- name: Include double-take deployment tasks
+  ansible.builtin.include_tasks:
+    file: double-take.yml
+    apply:
+      tags:
+        - double-take
+  tags:
+    - always
