@@ -50,6 +50,7 @@
     src: "templates/backup/backup.service.j2"
     dest: /etc/systemd/system/{{ double_take_service_name }}-backup.service
     owner: root
+    mode: "0644"
   vars:
     service: "{{ double_take_service_name }}"
   register: service_backup
@@ -60,20 +61,22 @@
     src: "templates/backup/backup.timer.j2"
     dest: /etc/systemd/system/{{ double_take_service_name }}-backup.timer
     owner: root
+    mode: "0644"
   vars:
     service: "{{ double_take_service_name }}"
     cron: "*-*-* 04:00:00"
-  register: service_backup
+  register: timer_backup
 
-- name: "Reload systemd"
+- name: Reload systemd
   become: true
-  changed_when: true
   ansible.builtin.systemd:
     daemon_reload: true
-  when: service_backup.changed or service_backup.changed
-  register: systemd_reload
+  when: service_backup.changed or timer_backup.changed
 
-- name: Start {{ double_take_service_name }}-backup timer
+- name: Enable and start backup timer
   become: true
-  command: "systemctl enable --now {{ double_take_service_name }}-backup.timer"
-  when: systemd_reload.changed
+  ansible.builtin.systemd:
+    name: "{{ double_take_service_name }}-backup.timer"
+    enabled: true
+    state: started
+  when: service_backup.changed or timer_backup.changed
