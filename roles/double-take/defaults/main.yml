@@ -1,26 +1,60 @@
 ---
-# TODO: Define default variables for double-take role
-# Follow the pattern from uptime-kuma role:
-#
-# service_name: double-take
-# service_port: "3000"
-# service_data_dir: /var/lib/double-take
-# service_config_dir: /etc/double-take
-# service_user: double-take
-# service_domain: double-take.local.iamrobertyoung.co.uk
-# service_container_name: double-take
-#
-# backup_image_name: backup-toolkit
-# backup_image_tag: local
-# backup_from: /data
-# backup_mosquitto_host: mosquitto.local.iamrobertyoung.co.uk
-# backup_mosquitto_username: "home-assistant"
-# backup_mosquitto_password: "password"
-# backup_bucket_name: "home-server-backup.iamrobertyoung.co.uk"
-#
-# nginx_config_dir: /etc/nginx
-# nginx_data_dir: /var/lib/nginx
-# nginx_user: nginx
-# nginx_service_name: nginx
-#
-# cert_dir: /etc/double-take/certs
+double_take_service_name: double-take
+double_take_user: double-take
+double_take_config_dir: /etc/double-take
+double_take_data_dir: /var/lib/double-take
+double_take_version: v1.13.11.8
+double_take_port: 3000
+double_take_api_port: 3000
+double_take_mqtt_host: mosquitto.local.iamrobertyoung.co.uk
+double_take_mqtt_port: 1883
+double_take_frigate_url: https://frigate.local.iamrobertyoung.co.uk
+
+backup_image_name: backup-toolkit
+backup_image_tag: local
+backup_from: /data
+backup_mosquitto_host: mosquitto.local.iamrobertyoung.co.uk
+backup_mosquitto_username: "home-assistant"
+backup_mosquitto_password: "password"
+backup_bucket_name: "home-server-backup.iamrobertyoung.co.uk"
+
+compreface_service_name: compreface
+compreface_user: compreface
+compreface_config_dir: /etc/compreface
+compreface_data_dir: /var/lib/compreface
+
+compreface_registry: exadel/
+compreface_admin_version: 1.2.0
+compreface_api_version: 1.2.0
+compreface_fe_version: 1.2.0
+compreface_core_version: 1.2.0
+compreface_postgres_version: 1.2.0
+
+# Database configuration
+compreface_postgres_username: postgres
+compreface_postgres_password: postgres
+compreface_postgres_db: frs
+compreface_postgres_domain: compreface-postgres-db
+compreface_postgres_port: 5432
+
+# Email configuration (optional)
+compreface_enable_email_server: false
+compreface_email_host: smtp.gmail.com
+compreface_email_username: ""
+compreface_email_from: ""
+compreface_email_password: ""
+
+# Performance configuration
+compreface_save_images_to_db: true
+compreface_api_java_options: "-Xmx4g"
+compreface_admin_java_options: "-Xmx1g"
+compreface_max_file_size: "5MB"
+compreface_max_request_size: "10M"
+compreface_max_detect_size: 640
+compreface_uwsgi_processes: 2
+compreface_uwsgi_threads: 1
+compreface_connection_timeout: 10000
+compreface_read_timeout: 60000
+
+# Frontend port
+compreface_fe_port: 8000

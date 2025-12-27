@@ -1,0 +1,92 @@
+version: '3.4'
+
+volumes:
+  postgres-data:
+
+services:
+  compreface-postgres-db:
+    image: {{ compreface_registry }}compreface-postgres-db:{{ compreface_postgres_version }}
+    restart: always
+    container_name: "compreface-postgres-db"
+    environment:
+      - POSTGRES_USER={{ compreface_postgres_username }}
+      - POSTGRES_PASSWORD={{ compreface_postgres_password }}
+      - POSTGRES_DB={{ compreface_postgres_db }}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - compreface
+
+  compreface-admin:
+    restart: always
+    image: {{ compreface_registry }}compreface-admin:{{ compreface_admin_version }}
+    container_name: "compreface-admin"
+    environment:
+      - POSTGRES_USER={{ compreface_postgres_username }}
+      - POSTGRES_PASSWORD={{ compreface_postgres_password }}
+      - POSTGRES_URL=jdbc:postgresql://{{ compreface_postgres_domain }}:{{ compreface_postgres_port }}/{{ compreface_postgres_db }}
+      - SPRING_PROFILES_ACTIVE=dev
+      - ENABLE_EMAIL_SERVER={{ compreface_enable_email_server }}
+      - EMAIL_HOST={{ compreface_email_host }}
+      - EMAIL_USERNAME={{ compreface_email_username }}
+      - EMAIL_FROM={{ compreface_email_from }}
+      - EMAIL_PASSWORD={{ compreface_email_password }}
+      - ADMIN_JAVA_OPTS={{ compreface_admin_java_options }}
+      - MAX_FILE_SIZE={{ compreface_max_file_size }}
+      - MAX_REQUEST_SIZE={{ compreface_max_request_size }}B
+    depends_on:
+      - compreface-postgres-db
+      - compreface-api
+    networks:
+      - compreface
+
+  compreface-api:
+    restart: always
+    image: {{ compreface_registry }}compreface-api:{{ compreface_api_version }}
+    container_name: "compreface-api"
+    depends_on:
+      - compreface-postgres-db
+    environment:
+      - POSTGRES_USER={{ compreface_postgres_username }}
+      - POSTGRES_PASSWORD={{ compreface_postgres_password }}
+      - POSTGRES_URL=jdbc:postgresql://{{ compreface_postgres_domain }}:{{ compreface_postgres_port }}/{{ compreface_postgres_db }}
+      - SPRING_PROFILES_ACTIVE=dev
+      - API_JAVA_OPTS={{ compreface_api_java_options }}
+      - SAVE_IMAGES_TO_DB={{ compreface_save_images_to_db }}
+      - MAX_FILE_SIZE={{ compreface_max_file_size }}
+      - MAX_REQUEST_SIZE={{ compreface_max_request_size }}B
+      - CONNECTION_TIMEOUT={{ compreface_connection_timeout }}
+      - READ_TIMEOUT={{ compreface_read_timeout }}
+    networks:
+      - compreface
+
+  compreface-fe:
+    restart: always
+    image: {{ compreface_registry }}compreface-fe:{{ compreface_fe_version }}
+    container_name: "compreface-ui"
+    ports:
+      - "{{ compreface_fe_port }}:80"
+    depends_on:
+      - compreface-api
+      - compreface-admin
+    environment:
+      - CLIENT_MAX_BODY_SIZE={{ compreface_max_request_size }}
+      - PROXY_READ_TIMEOUT={{ compreface_read_timeout }}ms
+      - PROXY_CONNECT_TIMEOUT={{ compreface_connection_timeout }}ms
+    networks:
+      - compreface
+
+  compreface-core:
+    restart: always
+    image: {{ compreface_registry }}compreface-core:{{ compreface_core_version }}
+    container_name: "compreface-core"
+    environment:
+      - ML_PORT=3000
+      - IMG_LENGTH_LIMIT={{ compreface_max_detect_size }}
+      - UWSGI_PROCESSES={{ compreface_uwsgi_processes }}
+      - UWSGI_THREADS={{ compreface_uwsgi_threads }}
+    networks:
+      - compreface
+
+networks:
+  compreface:

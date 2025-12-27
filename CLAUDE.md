@@ -12,7 +12,7 @@ All commands require AWS credentials via aws-vault for SSM parameter lookups.
 
 ```bash
 # Test connectivity
-aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible double_take -m ping
+aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible double-take -m ping
 
 # Run full playbook
 aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible-playbook playbooks/site.yml
