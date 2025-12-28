@@ -26,7 +26,7 @@ roles:
 
   - src: git@github.com:RobertYoung/homelab-ansible-role-step-ca-client.git
     scm: git
-    version: v1.3.0
+    version: v1.4.0
     name: step-ca-client
 
   - src: git@github.com:RobertYoung/homelab-ansible-role-syslog.git
@@ -38,8 +38,3 @@ roles:
     scm: git
     version: v1.3.2
     name: wazuh-agent
-
-  - src: git@github.com:RobertYoung/homelab-ansible-role-certbot.git
-    scm: git
-    version: v1.0.0
-    name: certbot

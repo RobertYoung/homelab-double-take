@@ -26,7 +26,28 @@
     - {path: "{{ double_take_data_dir }}", mode: "0755"}
     - {path: "{{ double_take_config_dir }}/docker-compose", mode: "0755"}
     - {path: "{{ double_take_config_dir }}/nginx", mode: "0755"}
+    - {path: "{{ double_take_config_dir }}/certs", mode: "0755"}
   become: true
+
+- name: Copy TLS certificate
+  ansible.builtin.copy:
+    src: "/etc/ssl/certs/{{ fqdn }}.crt"
+    dest: "{{ double_take_config_dir }}/certs/fullchain.pem"
+    remote_src: true
+    mode: "0644"
+  become: true
+  notify:
+    - Restart double-take
+
+- name: Copy TLS private key
+  ansible.builtin.copy:
+    src: "/etc/ssl/private/{{ fqdn }}.pem"
+    dest: "{{ double_take_config_dir }}/certs/privkey.pem"
+    remote_src: true
+    mode: "0600"
+  become: true
+  notify:
+    - Restart double-take
 
 - name: Create nginx configuration file
   ansible.builtin.template:
