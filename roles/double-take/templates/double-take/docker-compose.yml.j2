@@ -23,7 +23,7 @@ services:
     volumes:
       - {{ double_take_config_dir }}/nginx:/etc/nginx
       - nginx-data:/data
-      - /etc/letsencrypt:/etc/letsencrypt
+      - {{ double_take_config_dir }}/certs:/etc/nginx/certs:ro
     depends_on:
       - double-take
     networks:
